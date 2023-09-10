@@ -28,7 +28,7 @@ export class UserService {
         createUserDto.secretToken !== config.get("adminSecretToken")
       ) {
         throw new Error("Not allowed to create admin");
-      } else {
+      } else if (createUserDto.role !== userRole.CUSTOMER) {
         createUserDto.isVerified = true;
       }
 
@@ -48,7 +48,7 @@ export class UserService {
       otpExpiredTime.setMinutes(otpExpiredTime.getMinutes() + 10);
 
       const newUser = await this.userDB.create({
-        ...CreateUserDto,
+        ...createUserDto,
         otp,
         otpExpiredTime,
       });
@@ -76,6 +76,41 @@ export class UserService {
       };
     } catch (err) {
       throw err;
+    }
+  }
+
+  async verifyEmail(otp: string, email: string) {
+    try {
+      const user = await this.userDB.findOne({
+        email,
+      });
+
+      if (!user) {
+        throw new Error("User is not found!");
+      }
+
+      if (user.otp !== otp) {
+        throw new Error("Invalid OTP!");
+      }
+
+      if (user.otpExpiredTime < new Date()) {
+        throw new Error("OTP expired!");
+      }
+
+      await this.userDB.updateOne(
+        {
+          email,
+        },
+        {
+          isVerified: true,
+        },
+      );
+      return {
+        success: true,
+        message: "Email verify successful",
+      };
+    } catch (error) {
+      throw error;
     }
   }
 

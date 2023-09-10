@@ -4,10 +4,13 @@ import { AppService } from "./app.service";
 import { MongooseModule } from "@nestjs/mongoose";
 import config from "config";
 import { AllExceptionFilter } from "./exceptionFilter";
-import { UserModule } from './user/user.module';
+import { UserModule } from "./user/user.module";
 
 @Module({
-  imports: [MongooseModule.forRoot(config.get("mongoURI")), UserModule],
+  imports: [
+    MongooseModule.forRoot(config.get("mongoURI")),
+    UserModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,

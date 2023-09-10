@@ -3,14 +3,14 @@ import {
   ExecutionContext,
   NestInterceptor,
 } from "@nestjs/common";
-import { Observable, map } from "rxjs";
+import { map, Observable } from "rxjs";
 
 export interface Response<T> {
   message: string;
   success: boolean;
   result: any;
   error: null;
-  timeStamps: Date;
+  timestamps: Date;
   statusCode: number;
 }
 
@@ -30,7 +30,7 @@ export class TransformationInterceptor<T>
         message: data.message,
         success: data.success,
         result: data.result,
-        timeStamps: new Date(),
+        timestamps: new Date(),
         statusCode,
         path,
         error: null,

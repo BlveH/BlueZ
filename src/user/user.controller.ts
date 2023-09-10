@@ -21,7 +21,6 @@ export class UserController {
 
   @Post("sign-up")
   async create(@Body() createUserDto: CreateUserDto) {
-    console.log(createUserDto);
     return this.userService.create(createUserDto);
   }
 
@@ -47,6 +46,14 @@ export class UserController {
 
     delete loginResponse.result?.token;
     return loginResponse;
+  }
+
+  @Get("verify-email/:otp/:email")
+  async verifyEmail(
+    @Param("otp") otp: string,
+    @Param("email") email: string,
+  ) {
+    return await this.userService.verifyEmail(otp, email);
   }
 
   @Get()
