@@ -4,9 +4,9 @@ import {
   IsOptional,
   IsString,
 } from "class-validator";
-import { userRole } from "src/shared/schema/user.schema";
+import { Role } from "../role/role.enum";
 
-export class CreateUserDto {
+export class RegisterDto {
   @IsNotEmpty()
   @IsString()
   name: string;
@@ -21,7 +21,7 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsString()
-  @IsIn([userRole.ADMIN, userRole.CUSTOMER])
+  @IsIn([Role.Admin, Role.Customer])
   role: string;
 
   @IsOptional()

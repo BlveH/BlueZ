@@ -1,248 +1,22 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
+import { Injectable } from "@nestjs/common";
+
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { userRole } from "src/shared/schema/user.schema";
-import config from "config";
-import { UserRepository } from "src/shared/repositories/user.repo";
+
 import {
   comparePassword,
   generateHashPassword,
 } from "src/shared/utils/passwordManager.util";
-import { sendEmail } from "src/shared/utils/mailHandle";
-import { generateAuthToken } from "src/shared/utils/tokenGenerate.util";
+
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { Users } from "./model/user.model";
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(UserRepository) private readonly userDB: UserRepository,
+    @InjectModel(Users.name)
+    private readonly userModel: Model<Users>,
   ) {}
-  async create(createUserDto: CreateUserDto) {
-    try {
-      createUserDto.password = await generateHashPassword(
-        createUserDto.password,
-      );
-
-      //check is it for admin
-      if (
-        createUserDto.role === userRole.ADMIN &&
-        createUserDto.secretToken !== config.get("adminSecretToken")
-      ) {
-        throw new Error("Not allowed to create admin");
-      } else if (createUserDto.role !== userRole.CUSTOMER) {
-        createUserDto.isVerified = true;
-      }
-
-      //check exist user
-      const user = await this.userDB.findOne({
-        email: createUserDto.email,
-      });
-
-      if (user) {
-        throw new Error("User is already exist");
-      }
-
-      //generate otp
-      const otp = Math.floor(Math.random() * 900000) + 100000;
-
-      const otpExpiredTime = new Date();
-      otpExpiredTime.setMinutes(otpExpiredTime.getMinutes() + 10);
-
-      const newUser = await this.userDB.create({
-        ...createUserDto,
-        otp,
-        otpExpiredTime,
-      });
-
-      if (newUser.role !== userRole.ADMIN) {
-        sendEmail(
-          newUser.email,
-          config.get("emailService.emailTemplate.verifyEmail"),
-          "Email verification - BlueZone",
-          {
-            customerName: newUser.name,
-            customerEmail: newUser.email,
-            otp,
-          },
-        );
-      }
-
-      return {
-        success: true,
-        message:
-          newUser.role === userRole.ADMIN
-            ? "Admin created successfully"
-            : "Please activate your account by verifying your email. We have sent you a email with the OTP",
-        result: { email: newUser.email },
-      };
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async verifyEmail(otp: string, email: string) {
-    try {
-      const user = await this.userDB.findOne({
-        email,
-      });
-
-      if (!user) {
-        throw new Error("User is not found!");
-      }
-
-      if (user.otp !== otp) {
-        throw new Error("Invalid OTP!");
-      }
-
-      if (user.otpExpiredTime < new Date()) {
-        throw new Error("OTP expired!");
-      }
-
-      await this.userDB.updateOne(
-        {
-          _id: user._id,
-        },
-        {
-          isVerified: true,
-        },
-      );
-      return {
-        success: true,
-        message: "Email verify successful",
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async sendOtpEmail(email: string) {
-    try {
-      const user = await this.userDB.findOne({
-        email,
-      });
-
-      if (!user) {
-        throw new Error("User is not found!");
-      }
-
-      if (user.isVerified) {
-        throw new Error("Email is already verified!");
-      }
-
-      const otp = Math.floor(Math.random() * 900000) + 100000;
-      const otpExpiredTime = new Date();
-      otpExpiredTime.setMinutes(otpExpiredTime.getMinutes() + 10);
-      await this.userDB.updateOne(
-        {
-          _id: user._id,
-        },
-        {
-          otp,
-          otpExpiredTime,
-        },
-      );
-
-      sendEmail(
-        user.email,
-        config.get("emailService.emailTemplate.verifyEmail"),
-        "Email verification - BlueZone",
-        {
-          customerName: user.name,
-          customerEmail: user.email,
-          otp,
-        },
-      );
-
-      return {
-        success: true,
-        message: "OTP sent successfully",
-        result: { email: user.email },
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async login(email: string, password: string) {
-    const userExist = await this.userDB.findOne({
-      email,
-    });
-
-    if (!userExist) {
-      throw new Error("Invalid email or password!");
-    }
-
-    if (userExist.isVerified === false) {
-      throw new Error("Please verify your email!");
-    }
-
-    const isPasswordMatch = await comparePassword(
-      password,
-      userExist.password,
-    );
-
-    if (!isPasswordMatch) {
-      throw new Error("Invalid email or password!");
-    }
-
-    const token = generateAuthToken(userExist._id);
-
-    return {
-      success: true,
-      message: "Login successful",
-      result: {
-        user: {
-          id: userExist._id,
-          name: userExist.name,
-          email: userExist.email,
-        },
-        token: token,
-      },
-    };
-  }
-
-  async forgotPassword(email: string) {
-    try {
-      const user = await this.userDB.findOne({
-        email,
-      });
-
-      if (!user) {
-        throw new Error("User is not found!");
-      }
-
-      let password = Math.random().toString(36).substring(2, 12);
-      const tempPassword = password;
-      password = await generateHashPassword(password);
-      await this.userDB.updateOne(
-        {
-          _id: user._id,
-        },
-        {
-          password,
-        },
-      );
-
-      sendEmail(
-        user.email,
-        config.get("emailService.emailTemplate.verifyEmail"),
-        "Email verification - BlueZone",
-        {
-          customerName: user.name,
-          customerEmail: user.email,
-          newPassword: password,
-          loginLink: config.get("loginURL"),
-        },
-      );
-
-      return {
-        success: true,
-        message: "Password sent to your email",
-        result: { email: user.email, password: tempPassword },
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
 
   async updateNameOrPassword(
     id: string,
@@ -255,7 +29,7 @@ export class UserService {
         throw new Error("Please provide name or password");
       }
 
-      const user = await this.userDB.findOne({
+      const user = await this.userModel.findOne({
         _id: id,
       });
 
@@ -273,7 +47,7 @@ export class UserService {
         }
 
         const password = await generateHashPassword(newPassword);
-        await this.userDB.updateOne(
+        await this.userModel.updateOne(
           {
             _id: id,
           },
@@ -284,7 +58,7 @@ export class UserService {
       }
 
       if (name) {
-        await this.userDB.updateOne(
+        await this.userModel.updateOne(
           {
             _id: id,
           },
@@ -310,7 +84,7 @@ export class UserService {
 
   async findAll(role: string) {
     try {
-      const users = await this.userDB.find({
+      const users = await this.userModel.find({
         role,
       });
 

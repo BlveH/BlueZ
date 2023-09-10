@@ -1,5 +1,5 @@
 import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
+import { AppModule } from "./app/app.module";
 import config from "config";
 import { TransformationInterceptor } from "./responseInterceptor";
 import cookieParser = require("cookie-parser");
