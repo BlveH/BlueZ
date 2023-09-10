@@ -25,4 +25,8 @@ export class UserRepository {
   async updateOne(query: any, data: Record<string, any>) {
     return await this.userModel.updateOne(query, data);
   }
+
+  async findById(id: string) {
+    return await this.userModel.findById(id);
+  }
 }

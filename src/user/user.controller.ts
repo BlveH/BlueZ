@@ -10,11 +10,14 @@ import {
   HttpStatus,
   Res,
   Query,
+  Headers,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { Response } from "express";
+import { Roles } from "src/shared/middleware/role.decorator";
+import { userRole } from "src/shared/schema/user.schema";
 
 @Controller("user")
 export class UserController {
@@ -29,23 +32,20 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginUser: { email: string; password: string },
-    @Res({ passthrough: true }) response: Response,
+    @Headers("authorization") authorizationHeader: string,
   ) {
+    let token: string | undefined;
+
+    if (authorizationHeader) {
+      const [, tokenValue] = authorizationHeader.split("Bearer ");
+      token = tokenValue;
+    }
+
     const loginResponse = await this.userService.login(
       loginUser.email,
       loginUser.password,
     );
-    if (loginResponse.success) {
-      response.cookie(
-        "_digi_auth_token",
-        loginResponse.result?.token,
-        {
-          httpOnly: true,
-        },
-      );
-    }
 
-    delete loginResponse.result?.token;
     return loginResponse;
   }
 
@@ -85,6 +85,7 @@ export class UserController {
   }
 
   @Get()
+  @Roles(userRole.ADMIN)
   async findAll(@Query("role") role: string) {
     return await this.userService.findAll(role);
   }

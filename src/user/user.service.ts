@@ -184,7 +184,7 @@ export class UserService {
       throw new Error("Invalid email or password!");
     }
 
-    const token = await generateAuthToken(userExist._id);
+    const token = generateAuthToken(userExist._id);
 
     return {
       success: true,

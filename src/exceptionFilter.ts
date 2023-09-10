@@ -15,9 +15,7 @@ export interface HttpExceptionResponse {
 
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
-  constructor(
-    private readonly httpAdapterHost: HttpAdapterHost,
-  ) {}
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
   catch(exception: any, host: ArgumentsHost): void {
     const { httpAdapter } = this.httpAdapterHost;
     const ctx = host.switchToHttp();
@@ -39,20 +37,13 @@ export class AllExceptionFilter implements ExceptionFilter {
       timeStamp: new Date().toISOString(),
       path: httpAdapter.getRequestUrl(ctx.getRequest()),
       message:
-        (exceptionResponse as HttpExceptionResponse)
-          .message ||
-        (exceptionResponse as HttpExceptionResponse)
-          .error ||
+        (exceptionResponse as HttpExceptionResponse).error ||
+        (exceptionResponse as HttpExceptionResponse).message ||
         exceptionResponse ||
         "Something wrong!",
-      errorResponse:
-        exceptionResponse as HttpExceptionResponse,
+      errorResponse: exceptionResponse as HttpExceptionResponse,
     };
 
-    httpAdapter.reply(
-      ctx.getResponse(),
-      responseBody,
-      httpStatus,
-    );
+    httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }
 }
