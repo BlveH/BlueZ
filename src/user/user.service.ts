@@ -99,7 +99,7 @@ export class UserService {
 
       await this.userDB.updateOne(
         {
-          email,
+          _id: user._id,
         },
         {
           isVerified: true,
@@ -108,6 +108,54 @@ export class UserService {
       return {
         success: true,
         message: "Email verify successful",
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async sendOtpEmail(email: string) {
+    try {
+      const user = await this.userDB.findOne({
+        email,
+      });
+
+      if (!user) {
+        throw new Error("User is not found!");
+      }
+
+      if (user.isVerified) {
+        throw new Error("Email is already verified!");
+      }
+
+      const otp = Math.floor(Math.random() * 900000) + 100000;
+      const otpExpiredTime = new Date();
+      otpExpiredTime.setMinutes(otpExpiredTime.getMinutes() + 10);
+      await this.userDB.updateOne(
+        {
+          _id: user._id,
+        },
+        {
+          otp,
+          otpExpiredTime,
+        },
+      );
+
+      sendEmail(
+        user.email,
+        config.get("emailService.emailTemplate.verifyEmail"),
+        "Email verification - BlueZone",
+        {
+          customerName: user.name,
+          customerEmail: user.email,
+          otp,
+        },
+      );
+
+      return {
+        success: true,
+        message: "OTP sent successfully",
+        result: { email: user.email },
       };
     } catch (error) {
       throw error;
@@ -147,21 +195,117 @@ export class UserService {
           name: userExist.name,
           email: userExist.email,
         },
-        token,
+        token: token,
       },
     };
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async forgotPassword(email: string) {
+    try {
+      const user = await this.userDB.findOne({
+        email,
+      });
+
+      if (!user) {
+        throw new Error("User is not found!");
+      }
+
+      let password = Math.random().toString(36).substring(2, 12);
+      const tempPassword = password;
+      password = await generateHashPassword(password);
+      await this.userDB.updateOne(
+        {
+          _id: user._id,
+        },
+        {
+          password,
+        },
+      );
+
+      sendEmail(
+        user.email,
+        config.get("emailService.emailTemplate.verifyEmail"),
+        "Email verification - BlueZone",
+        {
+          customerName: user.name,
+          customerEmail: user.email,
+          newPassword: password,
+          loginLink: config.get("loginURL"),
+        },
+      );
+
+      return {
+        success: true,
+        message: "Password sent to your email",
+        result: { email: user.email, password: tempPassword },
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+  async updateNameOrPassword(
+    id: string,
+    updateNameOrPasswordDto: UpdateUserDto,
+  ) {
+    try {
+      const { oldPassword, newPassword, name } =
+        updateNameOrPasswordDto;
+      if (!name && !newPassword) {
+        throw new Error("Please provide name or password");
+      }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+      const user = await this.userDB.findOne({
+        _id: id,
+      });
+
+      if (!user) {
+        throw new Error("User is not found!");
+      }
+
+      if (newPassword) {
+        const isPasswordMatch = await comparePassword(
+          oldPassword,
+          user.password,
+        );
+        if (!isPasswordMatch) {
+          throw new Error("Invalid old password!");
+        }
+
+        const password = await generateHashPassword(newPassword);
+        await this.userDB.updateOne(
+          {
+            _id: id,
+          },
+          {
+            password,
+          },
+        );
+      }
+
+      if (name) {
+        await this.userDB.updateOne(
+          {
+            _id: id,
+          },
+          {
+            name,
+          },
+        );
+      }
+
+      return {
+        success: true,
+        message: "Update user successful",
+        result: {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+        },
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   remove(id: number) {

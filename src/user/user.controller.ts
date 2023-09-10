@@ -56,22 +56,31 @@ export class UserController {
     return await this.userService.verifyEmail(otp, email);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Get("send-otp-email/:email")
+  async sendOtpEmail(@Param("email") email: string) {
+    return await this.userService.sendOtpEmail(email);
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.userService.findOne(+id);
+  @Post("logout")
+  async logout(@Res() res: Response) {
+    res.clearCookie("_digi_auth_token");
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: "Logout successful",
+    });
   }
 
-  @Patch(":id")
-  update(
+  @Get("forgot-password/:email")
+  async forgotPassword(@Param("email") email: string) {
+    return await this.userService.forgotPassword(email);
+  }
+
+  @Patch("update-name-password/:id")
+  updateNameOrPassword(
     @Param("id") id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.userService.update(+id, updateUserDto);
+    return this.userService.updateNameOrPassword(id, updateUserDto);
   }
 
   @Delete(":id")
