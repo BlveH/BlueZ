@@ -308,6 +308,22 @@ export class UserService {
     }
   }
 
+  async findAll(role: string) {
+    try {
+      const users = await this.userDB.find({
+        role,
+      });
+
+      return {
+        success: true,
+        message: "Users fetched successfully",
+        result: users,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   remove(id: number) {
     return `This action removes a #${id} user`;
   }

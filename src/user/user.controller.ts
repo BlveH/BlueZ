@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   Res,
+  Query,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -81,6 +82,11 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.userService.updateNameOrPassword(id, updateUserDto);
+  }
+
+  @Get()
+  async findAll(@Query("role") role: string) {
+    return await this.userService.findAll(role);
   }
 
   @Delete(":id")

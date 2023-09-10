@@ -10,6 +10,10 @@ export class UserRepository {
     private readonly userModel: Model<Users>,
   ) {}
 
+  async find(query: any) {
+    return await this.userModel.find(query);
+  }
+
   async findOne(query: any) {
     return await this.userModel.findOne(query);
   }
