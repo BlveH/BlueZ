@@ -7,10 +7,11 @@ import { ProductSchema, Products } from "./model/product.model";
 import { UserSchema, Users } from "src/user/model/user.model";
 import { ENV } from "src/constants";
 import { StripeModule } from "nestjs-stripe";
+import { ProductRepository } from "./repo/product.repo";
 
 @Module({
   controllers: [ProductController],
-  providers: [ProductService],
+  providers: [ProductService, ProductRepository],
   imports: [
     AuthModule,
     MongooseModule.forFeature([

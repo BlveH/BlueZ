@@ -23,8 +23,7 @@ export class UserService {
     updateNameOrPasswordDto: UpdateUserDto,
   ) {
     try {
-      const { oldPassword, newPassword, name } =
-        updateNameOrPasswordDto;
+      const { oldPassword, newPassword, name } = updateNameOrPasswordDto;
       if (!name && !newPassword) {
         throw new Error("Please provide name or password");
       }
@@ -80,9 +79,5 @@ export class UserService {
     } catch (error) {
       throw error;
     }
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }

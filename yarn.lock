@@ -1756,6 +1756,11 @@ bser@2.1.1:
   dependencies:
     node-int64 "^0.4.0"
 
+bson-objectid@^2.0.2:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-2.0.4.tgz#339211572ef97dc98f2d68eaee7b99b7be59a089"
+  integrity sha512-vgnKAUzcDoa+AeyYwXCoHyF2q6u/8H46dxu5JN+4/TZeq/Dlinn0K6GvxsCLb3LHUJl0m/TLiEK31kUwtgocMQ==
+
 bson@^5.4.0:
   version "5.4.0"
   resolved "https://registry.npmjs.org/bson/-/bson-5.4.0.tgz"
@@ -4585,6 +4590,14 @@ q@^1.5.1:
   resolved "https://registry.yarnpkg.com/q/-/q-1.5.1.tgz#7e32f75b41381291d04611f1bf14109ac00651d7"
   integrity sha512-kV/CThkXo6xyFEZUugw/+pIOywXcDbFYgSct5cT3gqlbkBE1SJdwy6UQoZvodiWF/ckQLZyDE/Bu1M6gVu5lVw==
 
+qs-to-mongo@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/qs-to-mongo/-/qs-to-mongo-3.0.0.tgz#25e79399f778da5338cf2bb5d918834a3cc28e6b"
+  integrity sha512-HX2rd5LYMFbUnDpOYPrSMPdW+6eiwi0awLLyHxRoTPxM6PwLFeQyTpxuWGwOgy3Gbon07BbA/fkshZDO/rfh/Q==
+  dependencies:
+    bson-objectid "^2.0.2"
+    qs "^6.10.3"
+
 qs@6.11.0:
   version "6.11.0"
   resolved "https://registry.npmjs.org/qs/-/qs-6.11.0.tgz"
@@ -4592,12 +4605,17 @@ qs@6.11.0:
   dependencies:
     side-channel "^1.0.4"
 
-qs@^6.11.0:
+qs@^6.10.3, qs@^6.11.0:
   version "6.11.2"
   resolved "https://registry.npmjs.org/qs/-/qs-6.11.2.tgz"
   integrity sha512-tDNIz22aBzCDxLtVH++VnTfzxlfeK5CbqohpSqpJgj1Wg/cQbStNAz3NuqCs5vV+pjBsK4x4pN9HlVh7rcYRiA==
   dependencies:
     side-channel "^1.0.4"
+
+query-to-mongo@^0.11.2:
+  version "0.11.2"
+  resolved "https://registry.yarnpkg.com/query-to-mongo/-/query-to-mongo-0.11.2.tgz#12cabb7fe6634cf5036f24e432a3b9252fb2306a"
+  integrity sha512-5wQXzkSIZapQ1+Exm8AHDlJpmJFPH7czjq/iQqh6LCSgkUvSTxR74plymMEEh0SY9NQcJsibbmbRshSX6fbjeQ==
 
 queue-microtask@^1.2.2:
   version "1.2.3"
