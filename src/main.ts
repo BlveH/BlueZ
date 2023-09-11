@@ -10,10 +10,9 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  app.setGlobalPrefix(ENV.appPrefix);
   app.useGlobalInterceptors(new TransformationInterceptor());
-  app.useGlobalPipes(
-    new ValidationPipe({ forbidUnknownValues: false }),
-  );
+  app.useGlobalPipes(new ValidationPipe({ forbidUnknownValues: false }));
   await app.listen(ENV.Port, () => {
     console.log(`Server is running on port: ${ENV.Port}`);
   });

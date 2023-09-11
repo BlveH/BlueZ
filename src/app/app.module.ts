@@ -7,6 +7,7 @@ import { UserModule } from "../user/user.module";
 import { AuthModule } from "../auth/auth.module";
 import { ENV } from "src/constants";
 import { AdminModule } from "src/admin/admin.module";
+import { ProductModule } from "src/product/product.module";
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AdminModule } from "src/admin/admin.module";
     UserModule,
     AuthModule,
     AdminModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [
