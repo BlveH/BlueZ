@@ -6,12 +6,14 @@ import { AllExceptionFilter } from "../exceptionFilter";
 import { UserModule } from "../user/user.module";
 import { AuthModule } from "../auth/auth.module";
 import { ENV } from "src/constants";
+import { AdminModule } from "src/admin/admin.module";
 
 @Module({
   imports: [
     MongooseModule.forRoot(ENV.MongoURI),
     UserModule,
     AuthModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

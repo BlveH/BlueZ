@@ -6,12 +6,19 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { JwtAuthGuard } from "src/auth/guard";
+import { RolesGuard } from "src/auth/role/role.guard";
+import { Roles } from "src/auth/role/role.decorator";
+import { Role } from "src/auth/role/role.enum";
 
 @Controller("user")
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.Customer)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -21,11 +28,6 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.userService.updateNameOrPassword(id, updateUserDto);
-  }
-
-  @Get()
-  async findAll(@Query("role") role: string) {
-    return await this.userService.findAll(role);
   }
 
   @Delete(":id")
