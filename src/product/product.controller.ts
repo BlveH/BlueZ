@@ -8,6 +8,8 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from "@nestjs/common";
 import { ProductService } from "./product.service";
 import { CreateProductDto } from "./dto/create-product.dto";
@@ -16,6 +18,8 @@ import { Role } from "src/auth/role/role.enum";
 import { Roles } from "src/auth/role/role.decorator";
 import { RolesGuard } from "src/auth/role/role.guard";
 import { GetProductDto } from "./dto/get-product.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { ENV } from "src/constants";
 
 @Controller("product")
 export class ProductController {
@@ -53,5 +57,23 @@ export class ProductController {
   @Roles(Role.Admin)
   async removeProductById(@Param("id") id: string) {
     return await this.productService.removeProductById(id);
+  }
+
+  @Post("update/:id/image")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @UseInterceptors(
+    FileInterceptor("productImage", {
+      dest: ENV.file_storage_path,
+      limits: {
+        fileSize: 3145728,
+      },
+    }),
+  )
+  async uploadProductImage(
+    @Param("id") id: string,
+    @UploadedFile() file: ParameterDecorator,
+  ) {
+    return await this.productService.uploadProductImage(id, file);
   }
 }

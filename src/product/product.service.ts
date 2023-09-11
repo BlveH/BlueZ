@@ -8,6 +8,10 @@ import Stripe from "stripe";
 import { GetProductDto } from "./dto/get-product.dto";
 import qs2 from "qs-to-mongo";
 import { ProductRepository } from "./repo/product.repo";
+import cloudinary from "cloudinary";
+import { ENV } from "src/constants";
+import { error } from "console";
+import { unlinkSync } from "fs";
 
 @Injectable()
 export class ProductService {
@@ -15,7 +19,13 @@ export class ProductService {
     @Inject(ProductRepository) private readonly productDB: ProductRepository,
     @InjectModel(Products.name) private readonly productModel: Model<Products>,
     @InjectStripe() private readonly stripeClient: Stripe,
-  ) {}
+  ) {
+    cloudinary.v2.config({
+      cloud_name: ENV.cloud_name,
+      api_key: ENV.cloud_api_key,
+      api_secret: ENV.cloud_api_secret,
+    });
+  }
 
   async createProduct(createProductDto: CreateProductDto): Promise<{
     success: boolean;
@@ -177,6 +187,62 @@ export class ProductService {
         success: true,
         message: "Delete product successfully",
         result: null,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async uploadProductImage(
+    id: string,
+    file: any,
+  ): Promise<{
+    success: boolean;
+    message: string;
+    result: string;
+  }> {
+    try {
+      const product = await this.productModel.findOne({ _id: id });
+      if (!product) {
+        throw new Error("Product is not exist!");
+      }
+
+      if (product.imageDetails?.public_id) {
+        await cloudinary.v2.uploader.destroy(product.imageDetails.public_id, {
+          invalidate: true,
+        });
+      }
+
+      const resOfCloudinary = await cloudinary.v2.uploader.upload(file.path, {
+        folder: ENV.cloud_folder_path,
+        public_id: `${ENV.cluod_public_id_prefix}${Date.now()}`,
+        transformation: [
+          {
+            width: ENV.cloud_big_size.toString().split("x")[0],
+            height: ENV.cloud_big_size.toString().split("x")[1],
+            crop: "fill",
+          },
+          { quality: "auto" },
+        ],
+      });
+
+      unlinkSync(file.path);
+      await this.productModel.findOneAndUpdate(
+        { _id: id },
+        {
+          imageDetails: resOfCloudinary,
+          image: resOfCloudinary.secure_url,
+        },
+      );
+
+      await this.stripeClient.products.update(product.stripeProductId, {
+        images: [resOfCloudinary.secure_url],
+      });
+
+      return {
+        success: true,
+        message: "Upload product image successfully",
+        result: resOfCloudinary.secure_url,
       };
     } catch (error) {
       throw error;

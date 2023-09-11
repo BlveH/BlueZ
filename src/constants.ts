@@ -24,4 +24,5 @@ export const ENV = {
   stripe_cancel_url: process.env.STRIPE_CANCEL_URL,
   webhook_secret: process.env.WEBHOOK_SECRET,
   appPrefix: process.env.APP_PREFIX,
+  file_storage_path: process.env.FILE_STORAGE_PATH,
 };
