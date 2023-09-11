@@ -10,6 +10,7 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
+  Put,
 } from "@nestjs/common";
 import { ProductService } from "./product.service";
 import { CreateProductDto } from "./dto/create-product.dto";
@@ -20,6 +21,7 @@ import { RolesGuard } from "src/auth/role/role.guard";
 import { GetProductDto } from "./dto/get-product.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ENV } from "src/constants";
+import { ProductSkuDto, ProductSkuDtoArray } from "./dto/product-sku.dto";
 
 @Controller("product")
 export class ProductController {
@@ -75,5 +77,33 @@ export class ProductController {
     @UploadedFile() file: ParameterDecorator,
   ) {
     return await this.productService.uploadProductImage(id, file);
+  }
+
+  @Post("/update-sku/:productId")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async updateProductSku(
+    @Param("productId") productId: string,
+    @Body() updateProductSkuDto: ProductSkuDtoArray,
+  ) {
+    return await this.productService.updateProductSku(
+      productId,
+      updateProductSkuDto,
+    );
+  }
+
+  @Put("/update-sku/:productId/:skuId")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async updateProductSkuById(
+    @Param("productId") productId: string,
+    @Param("skuId") skuId: string,
+    @Body() updateProductSkuDto: ProductSkuDto,
+  ) {
+    return await this.productService.updateProductSkuById(
+      productId,
+      skuId,
+      updateProductSkuDto,
+    );
   }
 }
