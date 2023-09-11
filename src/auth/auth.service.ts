@@ -1,17 +1,17 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { InjectModel } from "@nestjs/mongoose";
-import config from "config";
 import { Model } from "mongoose";
 import {
   comparePassword,
   generateHashPassword,
-} from "src/shared/utils/passwordManager.util";
+} from "src/utils/passwordManager.util";
 import { ReqUser } from "src/global";
 import { RegisterDto } from "./dto/register.dto";
-import { sendEmail } from "src/shared/utils/mailHandle";
+import { sendEmail } from "src/utils/mailHandle";
 import { Users } from "src/user/model/user.model";
 import { Role } from "./role/role.enum";
+import { ENV } from "src/constants";
 
 @Injectable()
 export class AuthService {
@@ -53,7 +53,7 @@ export class AuthService {
       //check is it for admin
       if (
         registerDto.role === Role.Admin &&
-        registerDto.secretToken !== config.get("adminSecretToken")
+        registerDto.secretToken !== ENV.adminSecretToken
       ) {
         throw new Error("Not allowed to register admin");
       } else if (registerDto.role !== Role.Customer) {
@@ -84,7 +84,7 @@ export class AuthService {
       if (!newUser.role.includes(Role.Admin)) {
         sendEmail(
           newUser.email,
-          config.get("emailService.emailTemplate.verifyEmail"),
+          ENV.verifyEmail,
           "Email verification - BlueZone",
           {
             customerName: newUser.name,
@@ -170,7 +170,7 @@ export class AuthService {
 
       sendEmail(
         user.email,
-        config.get("emailService.emailTemplate.verifyEmail"),
+        ENV.verifyEmail,
         "Email verification - BlueZone",
         {
           customerName: user.name,
@@ -213,13 +213,13 @@ export class AuthService {
 
       sendEmail(
         user.email,
-        config.get("emailService.emailTemplate.verifyEmail"),
+        ENV.verifyEmail,
         "Email verification - BlueZone",
         {
           customerName: user.name,
           customerEmail: user.email,
           newPassword: password,
-          loginLink: config.get("loginURL"),
+          loginLink: ENV.loginURL,
         },
       );
 
@@ -260,14 +260,14 @@ export class AuthService {
         email: userExist.email,
         roles: userExist.role,
       },
-      { secret: config.get("secretToken") },
+      { secret: ENV.jwtSecret },
     );
     const refreshToken = this.jwtService.sign(
       {
         email: userExist.email,
         roles: userExist.role,
       },
-      { secret: config.get("refreshSecret") },
+      { secret: ENV.refreshSecret },
     );
 
     userExist.refreshTokens.push(refreshToken);

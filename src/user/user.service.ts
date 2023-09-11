@@ -5,7 +5,7 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import {
   comparePassword,
   generateHashPassword,
-} from "src/shared/utils/passwordManager.util";
+} from "src/utils/passwordManager.util";
 
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
