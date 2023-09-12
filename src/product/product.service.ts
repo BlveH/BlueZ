@@ -10,14 +10,13 @@ import qs2 from "qs-to-mongo";
 import { ProductRepository } from "./repo/product.repo";
 import cloudinary from "cloudinary";
 import { ENV } from "src/constants";
-import { error } from "console";
 import { unlinkSync } from "fs";
 import { ProductSkuDto, ProductSkuDtoArray } from "./dto/product-sku.dto";
 
 @Injectable()
 export class ProductService {
   constructor(
-    @Inject(ProductRepository) private readonly productDB: ProductRepository,
+    @Inject(ProductRepository) private readonly productRepo: ProductRepository,
     @InjectModel(Products.name) private readonly productModel: Model<Products>,
     @InjectStripe() private readonly stripeClient: Stripe,
   ) {
@@ -104,7 +103,7 @@ export class ProductService {
         };
       }
 
-      const { totalProductCount, products } = await this.productDB.find(
+      const { totalProductCount, products } = await this.productRepo.find(
         criteria,
         options,
       );
@@ -355,6 +354,121 @@ export class ProductService {
         success: true,
         message: "Update product sku successfully",
         result: null,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async addProductSkuLicense(
+    productId: string,
+    skuId: string,
+    licenseKey: string,
+  ) {
+    try {
+      const product = await this.productModel.findOne({ _id: productId });
+      if (!product) {
+        throw new Error("Product is not exist!");
+      }
+
+      const sku = product.skuDetails.find((value) => {
+        return value._id.toString() === skuId;
+      });
+      if (!sku) {
+        throw new Error("Sku is not exist!");
+      }
+
+      const result = await this.productRepo.createLicense(
+        productId,
+        skuId,
+        licenseKey,
+      );
+
+      return {
+        message: "License key added successfully",
+        success: true,
+        result: result,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async removeProductSkuLicense(id: string) {
+    try {
+      const result = await this.productRepo.removeLicense({ _id: id });
+
+      return {
+        success: true,
+        message: "License key removed successfully",
+        result: result,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getProductSkuLicense(productId: string, skuId: string) {
+    try {
+      const product = await this.productModel.findOne({ _id: productId });
+      if (!product) {
+        throw new Error("Product is not exist!");
+      }
+
+      const sku = product.skuDetails.find((value) => {
+        return value._id.toString() === skuId;
+      });
+      if (!sku) {
+        throw new Error("Sku is not exist!");
+      }
+
+      const result = await this.productRepo.findLicense({
+        product: productId,
+        productSku: skuId,
+      });
+
+      return {
+        success: true,
+        message: "Get licenses successfully",
+        result: result,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateProductSkuLicense(
+    productId: string,
+    skuId: string,
+    licenseKeyId: string,
+    licenseKey: string,
+  ) {
+    try {
+      const product = await this.productModel.findOne({ _id: productId });
+      if (!product) {
+        throw new Error("Product is not exist!");
+      }
+
+      const sku = product.skuDetails.find((value) => {
+        return value._id.toString() === skuId;
+      });
+      if (!sku) {
+        throw new Error("Sku is not exist!");
+      }
+
+      const result = await this.productRepo.updateLicense(
+        {
+          _id: licenseKeyId,
+        },
+        {
+          licenseKey: licenseKey,
+        },
+      );
+
+      return {
+        success: true,
+        message: "License key updated successfully",
+        result: result,
       };
     } catch (error) {
       throw error;

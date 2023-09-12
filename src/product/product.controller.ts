@@ -106,4 +106,53 @@ export class ProductController {
       updateProductSkuDto,
     );
   }
+
+  @Post("/update-sku/:productId/sku/:skuId/license")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async addProductSkuLicense(
+    @Param("productId") productId: string,
+    @Param("skuId") skuId: string,
+    @Body("licenseKey") licenseKey: string,
+  ) {
+    return await this.productService.addProductSkuLicense(
+      productId,
+      skuId,
+      licenseKey,
+    );
+  }
+
+  @Delete("/delete-sku/license/:licenseKey")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async removeProductSkuLicense(@Param("licenseKey") licenseKey: string) {
+    return await this.productService.removeProductSkuLicense(licenseKey);
+  }
+
+  @Get(":productId/sku/:skuId/license")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async getProductSkuLicense(
+    @Param("productId") productId: string,
+    @Param("skuId") skuId: string,
+  ) {
+    return await this.productService.getProductSkuLicense(productId, skuId);
+  }
+
+  @Put("update-sku/:productId/sku/:skuId/license/:licenseKeyId")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  async updateProductSkuLicense(
+    @Param("productId") productId: string,
+    @Param("skuId") skuId: string,
+    @Param("licenseKeyId") licenseKeyId: string,
+    @Body("licenseKey") licenseKey: string,
+  ) {
+    return await this.productService.updateProductSkuLicense(
+      productId,
+      skuId,
+      licenseKeyId,
+      licenseKey,
+    );
+  }
 }

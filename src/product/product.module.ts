@@ -8,6 +8,7 @@ import { UserSchema, Users } from "src/user/model/user.model";
 import { ENV } from "src/constants";
 import { StripeModule } from "nestjs-stripe";
 import { ProductRepository } from "./repo/product.repo";
+import { License, LicenseSchema } from "src/product/model/license.model";
 
 @Module({
   controllers: [ProductController],
@@ -24,6 +25,12 @@ import { ProductRepository } from "./repo/product.repo";
       {
         name: Users.name,
         schema: UserSchema,
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: License.name,
+        schema: LicenseSchema,
       },
     ]),
     StripeModule.forRoot({
