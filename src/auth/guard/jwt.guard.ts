@@ -6,7 +6,6 @@ import { ENV } from "src/constants";
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard("jwt") {}
-
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
@@ -18,8 +17,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
   async validate(payload: any) {
     return {
+      _id: payload._id,
       email: payload.email,
-      name: payload.name,
+      role: payload.role,
     };
   }
 }

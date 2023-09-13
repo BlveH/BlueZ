@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
@@ -6,7 +6,6 @@ import {
   comparePassword,
   generateHashPassword,
 } from "src/utils/passwordManager.util";
-import { ReqUser } from "src/global";
 import { RegisterDto } from "./dto/register.dto";
 import { sendEmail } from "src/utils/mailHandle";
 import { Users } from "src/user/model/user.model";
@@ -21,16 +20,13 @@ export class AuthService {
     private readonly userModel: Model<Users>,
   ) {}
 
-  async logout(user: ReqUser, refreshToken?: string) {
+  async logout(user: Record<string, any>, refreshToken?: string) {
     if (!refreshToken) {
       await this.userModel.updateOne(
         { email: user.email },
         { refreshTokens: [] },
       );
-      return {
-        success: true,
-        message: "Logout successful",
-      };
+      return;
     }
     await this.userModel.updateOne(
       {
@@ -46,9 +42,7 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     try {
-      registerDto.password = await generateHashPassword(
-        registerDto.password,
-      );
+      registerDto.password = await generateHashPassword(registerDto.password);
 
       //check is it for admin
       if (
@@ -168,16 +162,11 @@ export class AuthService {
         },
       );
 
-      sendEmail(
-        user.email,
-        ENV.verifyEmail,
-        "Email verification - BlueZone",
-        {
-          customerName: user.name,
-          customerEmail: user.email,
-          otp,
-        },
-      );
+      sendEmail(user.email, ENV.verifyEmail, "Email verification - BlueZone", {
+        customerName: user.name,
+        customerEmail: user.email,
+        otp,
+      });
 
       return {
         success: true,
@@ -211,17 +200,12 @@ export class AuthService {
         },
       );
 
-      sendEmail(
-        user.email,
-        ENV.verifyEmail,
-        "Email verification - BlueZone",
-        {
-          customerName: user.name,
-          customerEmail: user.email,
-          newPassword: password,
-          loginLink: ENV.loginURL,
-        },
-      );
+      sendEmail(user.email, ENV.verifyEmail, "Email verification - BlueZone", {
+        customerName: user.name,
+        customerEmail: user.email,
+        newPassword: password,
+        loginLink: ENV.loginURL,
+      });
 
       return {
         success: true,
@@ -246,10 +230,7 @@ export class AuthService {
       throw new Error("Please verify your email!");
     }
 
-    const isPasswordMatch = await comparePassword(
-      password,
-      userExist.password,
-    );
+    const isPasswordMatch = await comparePassword(password, userExist.password);
 
     if (!isPasswordMatch) {
       throw new Error("Invalid email or password!");
@@ -257,6 +238,7 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(
       {
+        _id: userExist._id,
         email: userExist.email,
         roles: userExist.role,
       },
@@ -264,6 +246,7 @@ export class AuthService {
     );
     const refreshToken = this.jwtService.sign(
       {
+        _id: userExist._id,
         email: userExist.email,
         roles: userExist.role,
       },

@@ -20,3 +20,14 @@ export enum BaseType {
   Computer = "Computer",
   Mobile = "Mobile",
 }
+
+export enum PaymentStatus {
+  Pending = "pending",
+  Paid = "paid",
+  Failed = "failed",
+}
+
+export enum OrderStatus {
+  Pending = "pending",
+  Completed = "completed",
+}

@@ -12,6 +12,7 @@ export const ENV = {
   privateApiKeyEmail: process.env.MAILGUN_PRIVATE_API_KEY,
   publicApiKeyEmail: process.env.MAILGUN_PUBLIC_API_KEY,
   verifyEmail: process.env.MAILGUN_VERIFY_EMAIL,
+  orderSuccess: process.env.MAILGUN_ORDER_SUCCESS,
   cloud_name: process.env.CLOUD_NAME,
   cloud_api_key: process.env.CLOUD_API_KEY,
   cloud_api_secret: process.env.CLOUD_API_SECRET,

@@ -20,9 +20,7 @@ export class AuthController {
 
   @Post("login")
   @HttpCode(HttpStatus.OK)
-  async login(
-    @Body() loginUser: { email: string; password: string },
-  ) {
+  async login(@Body() loginUser: { email: string; password: string }) {
     const loginResponse = await this.authService.login(
       loginUser.email,
       loginUser.password,
@@ -37,10 +35,7 @@ export class AuthController {
   }
 
   @Get("verify-email/:otp/:email")
-  async verifyEmail(
-    @Param("otp") otp: string,
-    @Param("email") email: string,
-  ) {
+  async verifyEmail(@Param("otp") otp: string, @Param("email") email: string) {
     return await this.authService.verifyEmail(otp, email);
   }
 
@@ -51,10 +46,8 @@ export class AuthController {
 
   @Post("logout")
   @UseGuards(JwtAuthGuard)
-  logout(
-    @Req() req: Request,
-    @Body("refreshToken") refreshToken: string,
-  ) {
+  logout(@Req() req: any, @Body("refreshToken") refreshToken: string) {
+    console.log(refreshToken);
     return this.authService.logout(req.user, refreshToken);
   }
 
