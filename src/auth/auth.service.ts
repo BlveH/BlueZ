@@ -240,7 +240,7 @@ export class AuthService {
       {
         _id: userExist._id,
         email: userExist.email,
-        roles: userExist.role,
+        role: userExist.role,
       },
       { secret: ENV.jwtSecret },
     );
@@ -248,7 +248,7 @@ export class AuthService {
       {
         _id: userExist._id,
         email: userExist.email,
-        roles: userExist.role,
+        role: userExist.role,
       },
       { secret: ENV.refreshSecret },
     );

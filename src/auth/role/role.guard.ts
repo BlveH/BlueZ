@@ -24,10 +24,7 @@ export class RolesGuard implements CanActivate {
       }
 
       const request = context.switchToHttp().getRequest();
-      const bearerToken = request.headers.authorization?.replace(
-        "Bearer ",
-        "",
-      );
+      const bearerToken = request.headers.authorization?.replace("Bearer ", "");
       if (!bearerToken) {
         return false;
       }
@@ -35,7 +32,8 @@ export class RolesGuard implements CanActivate {
       const payload = this.jwtService.verify(bearerToken, {
         secret: ENV.jwtSecret,
       });
-      const userRoles = payload.roles as Role[];
+
+      const userRoles = payload.role as Role[];
 
       return requiredRoles.some((role) => userRoles.includes(role));
     } catch (error) {

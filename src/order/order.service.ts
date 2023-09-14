@@ -41,13 +41,15 @@ export class OrderService {
         _id: user._id,
       });
       const query = {} as Record<string, any>;
-      if (userDetails.role.includes(Role.Customer)) {
-        query.userId = user._id.toString();
+      if (userDetails.role.toString() === Role.Customer) {
+        query.userId = user._id;
       }
       if (status) {
         query.status = status;
       }
-      const orders = await this.orderModel.find(query);
+      console.log(query);
+      const orders = await this.orderModel.find({ orderId: query.userId });
+      console.log(orders);
       return {
         success: true,
         result: orders,
@@ -80,6 +82,7 @@ export class OrderService {
           productSku: item.skuId,
           isSold: false,
         });
+
         if (itemsAreInStock.length <= item.quantity) {
           lineItems.push({
             price: item.skuPriceId,
@@ -92,6 +95,7 @@ export class OrderService {
           });
         }
       }
+      console.log(lineItems);
 
       if (lineItems.length === 0) {
         throw new BadRequestException(

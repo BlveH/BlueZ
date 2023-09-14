@@ -14,7 +14,6 @@ import {
 import { OrderService } from "./order.service";
 import { CheckOutDtoArr } from "./dto/checkout.dto";
 import { JwtAuthGuard } from "src/auth/guard";
-import { Request } from "express";
 
 @Controller("order")
 @UseGuards(JwtAuthGuard)
